@@ -25,16 +25,8 @@ on:
     - cron: '0 12 * * 6'
 
 jobs:
-  build:
+  init:
     runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        include:
-          - CONFIG_FILE: youku_yk-l2.config
-            DIY_SCRIPT: youku_yk-l2.sh
-          - CONFIG_FILE: newifi3_d2.config
-            DIY_SCRIPT: newifi3_d2.sh
-
     steps:
     - name: Checkout
       uses: actions/checkout@main
@@ -86,6 +78,17 @@ jobs:
 
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
+
+  build:
+    needs: init
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        include:
+          - CONFIG_FILE: youku_yk-l2.config
+            DIY_SCRIPT: youku_yk-l2.sh
+          - CONFIG_FILE: newifi3_d2.config
+            DIY_SCRIPT: newifi3_d2.sh
 
     - name: Load custom configuration
       run: |
