@@ -22,7 +22,7 @@ on:
   repository_dispatch:
   workflow_dispatch:
   schedule:
-    - cron: '0 5 * * 7'
+    - cron: '0 12 * * 6'
 
 jobs:
   build:
