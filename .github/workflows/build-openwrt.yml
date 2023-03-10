@@ -120,7 +120,8 @@ jobs:
       run: df -hT
 
   deploy:
-    runs-on: push
+    needs: build
+    runs-on: ubuntu-20.04
     steps:
     - name: Upload bin directory
       uses: actions/upload-artifact@main
