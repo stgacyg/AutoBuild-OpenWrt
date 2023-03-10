@@ -26,17 +26,19 @@ sed -i 's/+ariang//g'  feeds/luci/applications/luci-app-aria2/Makefile
 sed -i 's/+alist//g'  feeds/luciApp/applications/luci-app-alist/Makefile
 
 # Compressed xray
-cd feeds/packages/net/
-rm -rf xray-core
-ln -sf ../../../feeds/small/xray-core/ xray-core
+sed -i '/upx --lzma --best/d' .config
 sed -i -e "/GoPackage/a  \\\t$\(STAGING_DIR_HOST\)\/bin\/upx --lzma --best $\(PKG_INSTALL_DIR\)\/usr\/bin\/main" feeds/small/xray-core/Makefile
 cp -f /dev/null feeds/kenzo/luci-app-ssr-plus/root/etc/ssrplus/gfw_list.conf
 cp -f /dev/null feeds/kenzo/luci-app-ssr-plus/root/etc/ssrplus/china_ssr.txt
 
 # Set lan wan
+sed -i '/youku_yk-l2/d' .config
 sed -i '/lenovo,newifi-d1/a \\tyouku,youku_yk-l2\|\\'  target/linux/ramips/mt7621/base-files/etc/board.d/02_network
 
 # Rom Size
+sed -i '/Rom Size/d' .config
+sed -i '/CONFIG_TARGET_KERNEL_PARTSIZE/d' .config
+sed -i '/CONFIG_TARGET_ROOTFS_PARTSIZE/d' .config
 echo '# Rom Size' >> .config
 echo 'CONFIG_TARGET_KERNEL_PARTSIZE=16' >> .config
 echo 'CONFIG_TARGET_ROOTFS_PARTSIZE=32' >> .config
@@ -48,6 +50,7 @@ sed -i '/CONFIG_VERSION_DIST/d' .config
 sed -i '/CONFIG_VERSION_NUMBER/d' .config
 sed -i '/CONFIG_VERSION_CODE/d' .config
 sed -i '/CONFIG_VERSION_HOME_URL/d' .config
+sed -i '/Image Configurations/d' .config
 echo '# Image Configurations' >> .config
 echo 'CONFIG_IMAGEOPT=y' >> .config
 echo 'CONFIG_VERSIONOPT=y' >> .config
@@ -61,9 +64,14 @@ echo 'CONFIG_VERSION_HOME_URL="http://youku.i.cnbbx.com/"' >> .config
 # Add kernel build user
 [ -z $(grep "CONFIG_KERNEL_BUILD_USER=" .config) ] &&
     echo 'CONFIG_KERNEL_BUILD_USER="Cnbbx"' >>.config ||
-    sed -i 's@\(CONFIG_KERNEL_BUILD_USER=\).*@\1$"Cnbbx"@' .config
-
+    sed -i 's@\(CONFIG_KERNEL_BUILD_USER=\).*@\1"Cnbbx"@' .config
+	
 # Add kernel build domain
 [ -z $(grep "CONFIG_KERNEL_BUILD_DOMAIN=" .config) ] &&
     echo 'CONFIG_KERNEL_BUILD_DOMAIN="GitHub Actions"' >>.config ||
-    sed -i 's@\(CONFIG_KERNEL_BUILD_DOMAIN=\).*@\1$"GitHub Actions"@' .config 
+    sed -i 's@\(CONFIG_KERNEL_BUILD_DOMAIN=\).*@\1"GitHub Actions"@' .config
+
+# Replace xray-core
+cd feeds/packages/net/
+rm -rf xray-core
+ln -sf ../../../feeds/small/xray-core/ xray-core
