@@ -81,8 +81,6 @@ jobs:
       
   build:
     needs: init
-    use: init
-    runs-on: ubuntu-20.04
     strategy:
       matrix:
         include:
@@ -128,8 +126,6 @@ jobs:
 
   deploy:
     needs: build
-    use: build
-    runs-on: ubuntu-20.04
     steps:
     - name: Upload bin directory
       uses: actions/upload-artifact@main
