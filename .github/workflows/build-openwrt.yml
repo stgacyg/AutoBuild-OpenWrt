@@ -11,8 +11,6 @@ env:
   REPO_URL: https://github.com/cnbbx/Openwrt-src.git
   REPO_BRANCH: openwrt-22.03
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: youku_yk-l2.config
-  DIY_SCRIPT: youku_yk-l2.sh
   UPLOAD_BIN_DIR: true
   UPLOAD_FIRMWARE: true
   UPLOAD_COWTRANSFER: false
@@ -24,14 +22,24 @@ on:
   repository_dispatch:
   workflow_dispatch:
   schedule:
-    - cron: '7 5 * * 1'
+    - cron: '0 5 * * 7'
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - CONFIG_FILE: youku_yk-l2.config
+            DIY_SCRIPT: youku_yk-l2.sh
+          - CONFIG_FILE: newifi3_d2.config
+            DIY_SCRIPT: newifi3_d2.sh
 
     steps:
-    - name: Check server performance
+    - name: Checkout
+      uses: actions/checkout@main
+
+    - name: Check performance
       run: |
         echo "警告⚠"
         echo "若分配的服务器性能不足，务必及时取消，重新运行！"
@@ -48,9 +56,6 @@ jobs:
         echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
         echo "硬盘详情："
         df -Th
-
-    - name: Checkout
-      uses: actions/checkout@main
 
     - name: Initialization environment
       env:
@@ -85,10 +90,10 @@ jobs:
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
-        chmod +x $DIY_SCRIPT
+        [ -e ${{ matrix.CONFIG_FILE }} ] && mv ${{ matrix.CONFIG_FILE }} openwrt/.config
+        chmod +x ${{ matrix.DIY_SCRIPT }}
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_SCRIPT
+        $GITHUB_WORKSPACE/${{ matrix.DIY_SCRIPT }}
 
     - name: Download package
       id: package
@@ -114,6 +119,8 @@ jobs:
       if: (!cancelled())
       run: df -hT
 
+  upload:
+    steps:
     - name: Upload bin directory
       uses: actions/upload-artifact@main
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'

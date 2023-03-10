@@ -7,8 +7,8 @@
 #============================================================
 
 # Modify default IP
-sed -i 's/192.168.1.1/192.168.11.1/g' package/base-files/files/bin/config_generate
-sed -i 's/192.168.0./192.168.11./g' feeds/luciApp/applications/luci-app-pptp-server/root/etc/config/pptpd
+sed -i 's/192.168.1.1/192.168.99.1/g' package/base-files/files/bin/config_generate
+sed -i 's/192.168.0./192.168.99./g' feeds/luciApp/applications/luci-app-pptp-server/root/etc/config/pptpd
 
 # Modify hostname
 sed -i 's/OpenWrt/Cnbbx/g' package/kernel/mac80211/files/lib/wifi/mac80211.sh
@@ -30,10 +30,6 @@ sed -i '/upx --lzma --best/d' .config
 sed -i -e "/GoPackage/a  \\\t$\(STAGING_DIR_HOST\)\/bin\/upx --lzma --best $\(PKG_INSTALL_DIR\)\/usr\/bin\/main" feeds/small/xray-core/Makefile
 cp -f /dev/null feeds/kenzo/luci-app-ssr-plus/root/etc/ssrplus/gfw_list.conf
 cp -f /dev/null feeds/kenzo/luci-app-ssr-plus/root/etc/ssrplus/china_ssr.txt
-
-# Set lan wan
-sed -i '/youku_yk-l2/d' .config
-sed -i '/lenovo,newifi-d1/a \\tyouku,youku_yk-l2\|\\'  target/linux/ramips/mt7621/base-files/etc/board.d/02_network
 
 # Rom Size
 sed -i '/Rom Size/d' .config
