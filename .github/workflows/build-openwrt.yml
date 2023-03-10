@@ -119,8 +119,7 @@ jobs:
       if: (!cancelled())
       run: df -hT
 
-  upload:
-    uses: ./.github/workflows/build-openwrt.yml@main
+  deploy:
     steps:
     - name: Upload bin directory
       uses: actions/upload-artifact@main
