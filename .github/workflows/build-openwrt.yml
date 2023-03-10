@@ -19,6 +19,8 @@ env:
   TZ: Asia/Shanghai
 
 on:
+  repository_dispatch:
+  workflow_dispatch:
   schedule:
     - cron: '0 12 * * 6'
 
@@ -76,7 +78,7 @@ jobs:
 
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
-
+      
   build:
     needs: init
     runs-on: ubuntu-20.04
@@ -87,7 +89,7 @@ jobs:
             DIY_SCRIPT: youku_yk-l2.sh
           - CONFIG_FILE: newifi3_d2.config
             DIY_SCRIPT: newifi3_d2.sh
-
+    steps:
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
