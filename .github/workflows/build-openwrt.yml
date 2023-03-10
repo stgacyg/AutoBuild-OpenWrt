@@ -120,6 +120,7 @@ jobs:
       run: df -hT
 
   upload:
+    uses: ./.github/workflows/build-openwrt.yml@main
     steps:
     - name: Upload bin directory
       uses: actions/upload-artifact@main
