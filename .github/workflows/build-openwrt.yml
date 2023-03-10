@@ -81,6 +81,7 @@ jobs:
       
   build:
     needs: init
+    use: init
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -90,6 +91,9 @@ jobs:
           - CONFIG_FILE: newifi3_d2.config
             DIY_SCRIPT: newifi3_d2.sh
     steps:
+    - name: Checkout
+      uses: actions/checkout@main
+
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
@@ -124,6 +128,7 @@ jobs:
 
   deploy:
     needs: build
+    use: build
     runs-on: ubuntu-20.04
     steps:
     - name: Upload bin directory
