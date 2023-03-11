@@ -97,8 +97,8 @@ jobs:
         cd openwrt
         # make defconfig
         # make download -j$(nproc)
-        find dl -size -1024c -exec ls -l {} \;
-        find dl -size -1024c -exec rm -f {} \;
+        # find dl -size -1024c -exec ls -l {} \;
+        # find dl -size -1024c -exec rm -f {} \;
 
     - name: Compile the firmware
       id: compile
@@ -128,6 +128,7 @@ jobs:
       if: (!cancelled())
       run: |
         sudo mkdir -p /workdir/openwrt/bin
+        sudo chown $USER:$GROUPS /workdir/openwrt/bin
         df -hT $PWD
         touch openwrt/bin/${{ matrix.DIY_SCRIPT }}-test.txt
     
