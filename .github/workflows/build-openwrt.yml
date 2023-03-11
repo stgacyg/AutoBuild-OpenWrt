@@ -147,7 +147,6 @@ jobs:
       working-directory: /workdir
       run: |
         df -hT $PWD
-        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
     - uses: actions/download-artifact@main
       with:
