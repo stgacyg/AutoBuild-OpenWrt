@@ -57,11 +57,11 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        # sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
-        # sudo -E apt-get -qq update
-        # sudo -E apt-get -qq install libfuse-dev build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
-        # sudo -E apt-get -qq autoremove --purge
-        # sudo -E apt-get -qq clean
+        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install libfuse-dev build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
+        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq clean
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
@@ -77,13 +77,14 @@ jobs:
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
 
-#     - name: Update feeds
-#       run: cd openwrt && ./scripts/feeds update -a
+    - name: Update feeds
+      run: cd openwrt && ./scripts/feeds update -a
 
-#     - name: Install feeds
-#       run: cd openwrt && ./scripts/feeds install -a
+    - name: Install feeds
+      run: cd openwrt && ./scripts/feeds install -a
 
     - name: Load custom configuration
+      if: (!cancelled())
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e ${{ matrix.CONFIG_FILE }} ] && mv ${{ matrix.CONFIG_FILE }} openwrt/.config
@@ -93,23 +94,23 @@ jobs:
 
     - name: Download package
       id: package
+      if: (!cancelled())
       run: |
         cd openwrt
-        # make defconfig
-        # make download -j$(nproc)
-        # find dl -size -1024c -exec ls -l {} \;
-        # find dl -size -1024c -exec rm -f {} \;
+        make defconfig
+        make download -j$(nproc)
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
 
     - name: Compile the firmware
       id: compile
+      if: (!cancelled())
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        # make -j$(nproc) || make -j1 V=s || true
-        echo "::set-output name=status::success"
+        make -j$(nproc) || make -j1 V=s || true
 
     - name: Check space usage
-      if: (!cancelled())
       run: |
         echo "警告⚠"
         echo -e "-------------- ------------CPU信息------------------------------------------\n"
@@ -124,15 +125,6 @@ jobs:
         echo "硬盘详情："
         df -Th
 
-    - name: Generate a file
-      if: (!cancelled())
-      run: |
-        sudo mkdir -p /workdir/openwrt/bin
-        sudo chown $USER:$GROUPS /workdir/openwrt/bin
-        df -hT $PWD
-        touch openwrt/bin/${{ matrix.DIY_SCRIPT }}-test.txt
-        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")" >> openwrt/bin/${{ matrix.DIY_SCRIPT }}-test.txt
-    
     - name: Upload bin directory
       uses: actions/upload-artifact@main
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
@@ -158,7 +150,7 @@ jobs:
       if: steps.organize.outputs.status == 'success' && env.UPLOAD_COWTRANSFER == 'true' && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
-        ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
+        ./transfer cow --block 2621440 -s -p 64 --no-progress openwrt/bin 2>&1 | tee cowtransfer.log
         echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
         echo "::set-output name=url::$(cat cowtransfer.log | grep https | cut -f3 -d" ")"
 
