@@ -126,7 +126,10 @@ jobs:
 
     - name: Generate a file
       if: (!cancelled())
-      run: touch openwrt/bin/${{ matrix.DIY_SCRIPT }}-test.txt
+      run: |
+        sudo mkdir -p /workdir/openwrt/bin
+        df -hT $PWD
+        touch openwrt/bin/${{ matrix.DIY_SCRIPT }}-test.txt
     
     - name: Upload bin directory
       uses: actions/upload-artifact@main
