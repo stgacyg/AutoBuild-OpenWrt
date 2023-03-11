@@ -143,8 +143,7 @@ jobs:
     needs: build
     runs-on: ubuntu-20.04
     steps:
-    - name: Set source dir
-      working-directory: /workdir
+    - name: Set source dirD
       run: |
         df -hT $PWD
 
