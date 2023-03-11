@@ -123,7 +123,7 @@ jobs:
 
     - name: Upload bin directory
       uses: actions/upload-artifact@main
-      if: inputs.UPLOAD_BIN_DIR == 'true'
+      if: inputs.UPLOAD_BIN_DIR == true
       with:
         name: OpenWrt_bin
         path: openwrt/bin
@@ -143,7 +143,7 @@ jobs:
         
     - name: Organize files
       id: organize
-      if: inputs.UPLOAD_FIRMWARE == 'true' && !cancelled()
+      if: inputs.UPLOAD_FIRMWARE == true && !cancelled()
       run: |
         cd openwrt/bin/targets/*/*
         rm -rf packages
@@ -158,7 +158,7 @@ jobs:
 
     - name: Upload firmware to cowtransfer
       id: cowtransfer
-      if: inputs.UPLOAD_COWTRANSFER == 'true' && !cancelled()
+      if: inputs.UPLOAD_COWTRANSFER == true && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
         ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
@@ -167,7 +167,7 @@ jobs:
 
     - name: Upload firmware to WeTransfer
       id: wetransfer
-      if: inputs.UPLOAD_WETRANSFER == 'true' && !cancelled()
+      if: inputs.UPLOAD_WETRANSFER == true && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
         ./transfer wet -s -p 16 --no-progress ${FIRMWARE} 2>&1 | tee wetransfer.log
@@ -176,7 +176,7 @@ jobs:
 
     - name: Generate release tag
       id: tag
-      if: inputs.UPLOAD_RELEASE == 'true' && !cancelled()
+      if: inputs.UPLOAD_RELEASE == true && !cancelled()
       run: |
         echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
         touch release.txt
@@ -201,7 +201,7 @@ jobs:
 
     - name: Remove old Releases
       uses: dev-drprasad/delete-older-releases@v0.1.0
-      if: inputs.UPLOAD_RELEASE == 'true' && !cancelled()
+      if: inputs.UPLOAD_RELEASE == true && !cancelled()
       with:
         keep_latest: 3
         delete_tags: true
