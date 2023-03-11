@@ -124,6 +124,10 @@ jobs:
         echo "硬盘详情："
         df -Th
 
+    - name: Generate a file
+      if: (!cancelled())
+      run: touch openwrt/bin/test.txt
+    
     - name: Upload bin directory
       uses: actions/upload-artifact@main
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
