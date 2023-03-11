@@ -11,16 +11,26 @@ env:
   REPO_URL: https://github.com/cnbbx/Openwrt-src.git
   REPO_BRANCH: openwrt-22.03
   FEEDS_CONF: feeds.conf.default
-  UPLOAD_BIN_DIR: true
-  UPLOAD_FIRMWARE: true
-  UPLOAD_COWTRANSFER: false
-  UPLOAD_WETRANSFER: true
-  UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
 
 on:
   repository_dispatch:
-  workflow_dispatch:
+    inputs:
+      UPLOAD_BIN_DIR:
+        type: boolean
+        default: true
+      UPLOAD_FIRMWARE:
+        type: boolean
+        default: true
+      UPLOAD_COWTRANSFER:
+        type: boolean
+        default: false
+      UPLOAD_WETRANSFER:
+        type: boolean
+        default: true
+      UPLOAD_RELEASE:
+        type: boolean
+        default: true
   schedule:
     - cron: '0 12 * * 6'
 
@@ -112,7 +122,7 @@ jobs:
 
     - name: Upload bin directory
       uses: actions/upload-artifact@main
-      if: env.UPLOAD_BIN_DIR == 'true'
+      if: inputs.UPLOAD_BIN_DIR == 'true'
       with:
         name: OpenWrt_bin
         path: openwrt/bin
@@ -129,28 +139,43 @@ jobs:
       with:
         name: OpenWrt_bin
         path: openwrt/bin
+        
+    - name: Organize files
+      id: organize
+      if: inputs.UPLOAD_FIRMWARE == 'true' && !cancelled()
+      run: |
+        cd openwrt/bin/targets/*/*
+        rm -rf packages
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        
+    - name: Upload firmware directory
+      uses: actions/upload-artifact@main
+      if: (!cancelled())
+      with:
+        name: OpenWrt_firmware
+        path: ${{ env.FIRMWARE }}
 
     - name: Upload firmware to cowtransfer
       id: cowtransfer
-      if: env.UPLOAD_COWTRANSFER == 'true' && !cancelled()
+      if: inputs.UPLOAD_COWTRANSFER == 'true' && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
-        ./transfer cow --block 2621440 -s -p 64 --no-progress openwrt/bin 2>&1 | tee cowtransfer.log
+        ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
         echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
         echo "::set-output name=url::$(cat cowtransfer.log | grep https | cut -f3 -d" ")"
 
     - name: Upload firmware to WeTransfer
       id: wetransfer
-      if: env.UPLOAD_WETRANSFER == 'true' && !cancelled()
+      if: inputs.UPLOAD_WETRANSFER == 'true' && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
-        ./transfer wet -s -p 16 --no-progress openwrt/bin 2>&1 | tee wetransfer.log
+        ./transfer wet -s -p 16 --no-progress ${FIRMWARE} 2>&1 | tee wetransfer.log
         echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
         echo "::set-output name=url::$(cat wetransfer.log | grep https | cut -f3 -d" ")"
 
     - name: Generate release tag
       id: tag
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      if: inputs.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
         echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
         touch release.txt
@@ -165,7 +190,7 @@ jobs:
       with:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
-        files: openwrt/bin/*
+        files: ${{ env.FIRMWARE }}/*
 
     - name: Delete workflow runs
       uses: GitRML/delete-workflow-runs@main
@@ -175,7 +200,7 @@ jobs:
 
     - name: Remove old Releases
       uses: dev-drprasad/delete-older-releases@v0.1.0
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      if: inputs.UPLOAD_RELEASE == 'true' && !cancelled()
       with:
         keep_latest: 3
         delete_tags: true
