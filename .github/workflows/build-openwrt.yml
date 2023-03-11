@@ -131,7 +131,7 @@ jobs:
         sudo chown $USER:$GROUPS /workdir/openwrt/bin
         df -hT $PWD
         touch openwrt/bin/${{ matrix.DIY_SCRIPT }}-test.txt
-        "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")" >> openwrt/bin/${{ matrix.DIY_SCRIPT }}-test.txt
+        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")" >> openwrt/bin/${{ matrix.DIY_SCRIPT }}-test.txt
     
     - name: Upload bin directory
       uses: actions/upload-artifact@main
