@@ -131,6 +131,7 @@ jobs:
         sudo chown $USER:$GROUPS /workdir/openwrt/bin
         df -hT $PWD
         touch openwrt/bin/${{ matrix.DIY_SCRIPT }}-test.txt
+        "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")" >> openwrt/bin/${{ matrix.DIY_SCRIPT }}-test.txt
     
     - name: Upload bin directory
       uses: actions/upload-artifact@main
@@ -166,7 +167,7 @@ jobs:
       if: steps.organize.outputs.status == 'success' && env.UPLOAD_WETRANSFER == 'true' && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
-        ./transfer wet -s -p 16 --no-progress ${FIRMWARE} 2>&1 | tee wetransfer.log
+        ./transfer wet -s -p 16 --no-progress openwrt/bin 2>&1 | tee wetransfer.log
         echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
         echo "::set-output name=url::$(cat wetransfer.log | grep https | cut -f3 -d" ")"
 
@@ -188,7 +189,7 @@ jobs:
       with:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
-        files: ${{ env.FIRMWARE }}/*
+        files: openwrt/bin/*
 
     - name: Delete workflow runs
       uses: GitRML/delete-workflow-runs@main
