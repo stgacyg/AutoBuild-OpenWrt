@@ -47,10 +47,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - CONFIG_FILE: youku_yk-l2.config
-            DIY_SCRIPT: youku_yk-l2.sh
-          - CONFIG_FILE: newifi3_d2.config
-            DIY_SCRIPT: newifi3_d2.sh
+          - FIRMWARE_NAME: youku_yk-l2
+          - FIRMWARE_NAME: newifi3_d2
     steps:
     - name: 检出主分支
       uses: actions/checkout@main
@@ -104,10 +102,10 @@ jobs:
       if: (!cancelled())
       run: |
         [ -e files ] && mv files openwrt/files
-        [ -e ${{ matrix.CONFIG_FILE }} ] && mv ${{ matrix.CONFIG_FILE }} openwrt/.config
-        chmod +x ${{ matrix.DIY_SCRIPT }}
+        [ -e ${{ matrix.FIRMWARE_NAME }}.config ] && mv ${{ matrix.FIRMWARE_NAME }}.config openwrt/.config
+        chmod +x ${{ matrix.FIRMWARE_NAME }}.sh
         cd openwrt
-        $GITHUB_WORKSPACE/${{ matrix.DIY_SCRIPT }}
+        $GITHUB_WORKSPACE/${{ matrix.FIRMWARE_NAME }}.sh
 
     - name: 下载自定义固件插件
       id: package
