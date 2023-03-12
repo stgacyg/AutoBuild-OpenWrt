@@ -18,22 +18,27 @@ on:
   workflow_dispatch:
     inputs:
       UPLOAD_BIN_DIR:
+        description: '保存OpenWrt的bin全部文件到Artifacts'
         type: boolean
         default: true
       UPLOAD_FIRMWARE:
+        description: '保存Firmware固件到Artifacts'
         type: boolean
         default: true
       UPLOAD_COWTRANSFER:
+        description: '发布Firmware固件到Cowtransfer'
         type: boolean
         default: false
       UPLOAD_WETRANSFER:
+        description: '发布Firmware固件到Wetransfer'
         type: boolean
         default: true
       UPLOAD_RELEASE:
+        description: '发布Firmware固件到Releases'
         type: boolean
         default: true
   schedule:
-    - cron: '0 12 * * 6'
+    - cron: '5 8 * * 1'
 
 jobs:
   build:
@@ -46,10 +51,10 @@ jobs:
           - CONFIG_FILE: newifi3_d2.config
             DIY_SCRIPT: newifi3_d2.sh
     steps:
-    - name: Checkout
+    - name: 检出主分支
       uses: actions/checkout@main
 
-    - name: Check space usage
+    - name: 检查空间使用情况
       run: |
         echo "警告⚠"
         echo -e "-------------- ------------CPU信息------------------------------------------\n"
@@ -64,7 +69,7 @@ jobs:
         echo "硬盘详情："
         df -Th
 
-    - name: Initialization environment
+    - name: 初始化系统环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
@@ -77,24 +82,24 @@ jobs:
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
 
-    - name: Clone source code
+    - name: 克隆软路由源代码
       working-directory: /workdir
       run: |
         df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
-    - name: Load custom feeds
+    - name: 加载自定义订阅项目
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
 
-    - name: Update feeds
+    - name: 下载自定义项目的清单
       run: cd openwrt && ./scripts/feeds update -a
 
-    - name: Install feeds
+    - name: 安装自定义项目的清单
       run: cd openwrt && ./scripts/feeds install -a
 
-    - name: Load custom configuration
+    - name: 加载自定义固件配置
       if: (!cancelled())
       run: |
         [ -e files ] && mv files openwrt/files
@@ -103,7 +108,7 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/${{ matrix.DIY_SCRIPT }}
 
-    - name: Download package
+    - name: 下载自定义固件插件
       id: package
       if: (!cancelled())
       run: |
@@ -113,7 +118,7 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
-    - name: Compile the firmware
+    - name: 编译固件
       id: compile
       if: (!cancelled())
       run: |
@@ -121,7 +126,7 @@ jobs:
         echo -e "$(nproc) thread compile"
         make -j$(nproc) || make -j1 V=s || true
 
-    - name: Upload bin directory
+    - name: 保存编译后的全部文件
       uses: actions/upload-artifact@main
       if: inputs.UPLOAD_BIN_DIR == true
       with:
@@ -132,51 +137,48 @@ jobs:
     needs: build
     runs-on: ubuntu-20.04
     steps:
-    - name: Set source dirD
-      run: |
-        df -hT $PWD
-
-    - uses: actions/download-artifact@main
+    - name: 调取编译后的全部文件
+      uses: actions/download-artifact@main
       with:
         name: OpenWrt_bin
         path: openwrt/bin
         
-    - name: Organize files
+    - name: 优化需要发布的固件
       id: organize
       if: inputs.UPLOAD_FIRMWARE == true && !cancelled()
       run: |
         cd openwrt/bin/targets/*/*
-        df -Th
+        df -hT $PWD
         rm -rf packages
         rm -rf *initramfs*
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         
-    - name: Upload firmware directory
+    - name: 保存全部固件文件
       uses: actions/upload-artifact@main
-      if: (!cancelled())
+      if: inputs.UPLOAD_FIRMWARE == true && !cancelled()
       with:
         name: OpenWrt_firmware
         path: ${{ env.FIRMWARE }}
 
-    - name: Upload firmware to cowtransfer
+    - name: 发布固件到Cowtransfer
       id: cowtransfer
       if: inputs.UPLOAD_COWTRANSFER == true && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
         ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
         echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
-        echo "name=url::$(cat cowtransfer.log | grep https | cut -f3 -d" ")" >> $GITHUB_OUTPUT
+        echo "url=$(cat cowtransfer.log | grep https | cut -f3 -d" ")" >> $GITHUB_OUTPUT
 
-    - name: Upload firmware to WeTransfer
+    - name: 发布固件到WeTransfer
       id: wetransfer
       if: inputs.UPLOAD_WETRANSFER == true && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
         ./transfer wet -s -p 16 --no-progress ${FIRMWARE} 2>&1 | tee wetransfer.log
         echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
-        echo "name=url::$(cat wetransfer.log | grep https | cut -f3 -d" ")" >> $GITHUB_OUTPUT
+        echo "url=$(cat wetransfer.log | grep https | cut -f3 -d" ")" >> $GITHUB_OUTPUT
 
-    - name: Generate release tag
+    - name: 生成 release tag
       id: tag
       if: inputs.UPLOAD_RELEASE == true && !cancelled()
       run: |
@@ -185,9 +187,9 @@ jobs:
         [ ${{ inputs.UPLOAD_COWTRANSFER }} = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
         [ ${{ inputs.UPLOAD_WETRANSFER }} = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
 
-    - name: Upload firmware to release
+    - name: 上传固件到release
       uses: softprops/action-gh-release@v1
-      if: (!cancelled())
+      if: inputs.UPLOAD_RELEASE == true && !cancelled()
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -195,13 +197,13 @@ jobs:
         body_path: release.txt
         files: ${{ env.FIRMWARE }}/*
 
-    - name: Delete workflow runs
+    - name: 移除老的 workflow runs
       uses: GitRML/delete-workflow-runs@main
       with:
         retain_days: 1
         keep_minimum_runs: 3
 
-    - name: Remove old Releases
+    - name: 移除老的 Releases
       uses: dev-drprasad/delete-older-releases@v0.1.0
       if: inputs.UPLOAD_RELEASE == true && !cancelled()
       with:
