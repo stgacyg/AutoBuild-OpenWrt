@@ -11,6 +11,7 @@ env:
   REPO_URL: https://github.com/cnbbx/Openwrt-src.git
   REPO_BRANCH: openwrt-22.03
   FEEDS_CONF: feeds.conf.default
+  BUILD_USER: Cnbbx
   TZ: Asia/Shanghai
 
 on:
@@ -184,6 +185,11 @@ jobs:
       run: |
         echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
         touch release.txt
+        echo "1、本固件为自动编译" >> release.txt
+        echo "2、发行版中只提供完整的固件" >> release.txt
+        echo "3、源码：${{ env.REPO_URL }}" >> release.txt
+        echo "-- Build by ${{ env.BUILD_USER }} @ with Github Action on ${{ steps.tag.outputs.release_tag }}" >> release.txt
+        echo "🚀 Auto build | 自动编译" >> release.txt
         [ ${{ inputs.UPLOAD_COWTRANSFER }} = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
         [ ${{ inputs.UPLOAD_WETRANSFER }} = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
 
