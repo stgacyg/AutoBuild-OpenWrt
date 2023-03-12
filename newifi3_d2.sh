@@ -25,9 +25,10 @@ sed -i 's/bootstrap/argon/g' feeds/luci/modules/luci-base/root/etc/config/luci
 sed -i 's/+ariang//g'  feeds/luci/applications/luci-app-aria2/Makefile
 sed -i 's/+alist//g'  feeds/luciApp/applications/luci-app-alist/Makefile
 
-# Compressed xray
+# Compressed Go
 sed -i '/upx --lzma --best/d' .config
 sed -i -e "/GoPackage/a  \\\t$\(STAGING_DIR_HOST\)\/bin\/upx --lzma --best $\(PKG_INSTALL_DIR\)\/usr\/bin\/main" feeds/small/xray-core/Makefile
+sed -i -e "/define Package\/frp\/install/a  \\\t$\(STAGING_DIR_HOST\)\/bin\/upx --lzma --best $\(GO_PKG_BUILD_BIN_DIR\)\/$\(2\)" feeds/packages/net/frp/Makefile
 cp -f /dev/null feeds/kenzo/luci-app-ssr-plus/root/etc/ssrplus/gfw_list.conf
 cp -f /dev/null feeds/kenzo/luci-app-ssr-plus/root/etc/ssrplus/china_ssr.txt
 
