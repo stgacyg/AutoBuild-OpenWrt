@@ -146,6 +146,7 @@ jobs:
       if: inputs.UPLOAD_FIRMWARE == true && !cancelled()
       run: |
         cd openwrt/bin/targets/*/*
+        df -Th
         rm -rf packages
         rm -rf *initramfs*
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
