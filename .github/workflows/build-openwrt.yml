@@ -202,7 +202,7 @@ jobs:
         files: ${{ env.FIRMWARE }}/*
 
     - name: 移除老的 workflow runs
-      uses: GitRML/delete-workflow-runs@main
+      uses: zhoujinshi/delete-workflow-runs@main
       with:
         retain_days: 1
         keep_minimum_runs: 3
