@@ -32,8 +32,8 @@ cp -f /dev/null feeds/kenzo/luci-app-ssr-plus/root/etc/ssrplus/gfw_list.conf
 cp -f /dev/null feeds/kenzo/luci-app-ssr-plus/root/etc/ssrplus/china_ssr.txt
 
 # Set lan wan
-sed -i '/youku_yk-l2/d' .config
-sed -i '/lenovo,newifi-d1/a \\tyouku,yk-l2\|\\'  target/linux/ramips/mt7621/base-files/etc/board.d/02_network
+# sed -i '/youku,yk-l2/d' .config
+# sed -i '/lenovo,newifi-d1/a \\tyouku,yk-l2\|\\'  target/linux/ramips/mt7621/base-files/etc/board.d/02_network
 
 # Rom Size
 sed -i '/Rom Size/d' .config
