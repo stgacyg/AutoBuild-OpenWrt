@@ -39,7 +39,7 @@ on:
         type: boolean
         default: true
   schedule:
-    - cron: '5 8 * * 1'
+    - cron: '5 20 * * 0'
 
 jobs:
   build:
