@@ -4,6 +4,7 @@ Auto build OpenWrt firmware for GitHub Actions
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/cnbbx/OpenWrt-AutoBuild?style=for-the-badge&label=Download)](https://github.com/cnbbx/OpenWrt-AutoBuild/releases/latest)
 
 # 路由器固件介绍
+### 本固件基于openwrt-22.03稳定版编译而成
 youku_yk-l2为16M以内的mt7621，其他同型号的可以强刷
 
 d-team_newifi-d2为32M以内的mt7621，其他同型号的可以强刷
