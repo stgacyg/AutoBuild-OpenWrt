@@ -151,6 +151,12 @@ jobs:
     needs: build
     runs-on: ubuntu-20.04
     steps:
+    - name: 调取编译后的插件文件
+      uses: actions/download-artifact@main
+      with:
+        name: OpenWrt_ipkPackages
+        path: openwrt/ipkPackages
+
     - name: 调取编译后的固件文件
       uses: actions/download-artifact@main
       with:
@@ -161,6 +167,8 @@ jobs:
       id: organize
       if: inputs.UPLOAD_FIRMWARE == true && !cancelled()
       run: |
+        cd openwrt
+        tar -zcvf bin/Packages.tar.gz ipkPackages
         cd bin/targets/*/*
         rm -rf packages
         rm -rf *initramfs*
