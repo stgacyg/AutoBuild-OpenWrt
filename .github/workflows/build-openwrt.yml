@@ -6,12 +6,12 @@
 #
 
 name: Build OpenWrt
-
+run-name: 我的OpenWrt云编译：${{ github.actor }} requested a workflow
 env:
   REPO_URL: https://github.com/cnbbx/Openwrt-src.git
   REPO_BRANCH: openwrt-22.03
   FEEDS_CONF: feeds.conf.default
-  BUILD_USER: Cnbbx
+  BUILD_USER: ${{ github.actor }}
   TZ: Asia/Shanghai
 
 on:
@@ -84,7 +84,6 @@ jobs:
     - name: 克隆软路由源代码
       working-directory: /workdir
       run: |
-        df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
@@ -103,9 +102,7 @@ jobs:
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e ${{ matrix.FIRMWARE_NAME }}.config ] && mv ${{ matrix.FIRMWARE_NAME }}.config openwrt/.config
-        chmod +x ${{ matrix.FIRMWARE_NAME }}.sh
-        cd openwrt
-        $GITHUB_WORKSPACE/${{ matrix.FIRMWARE_NAME }}.sh
+        chmod +x ${{ matrix.FIRMWARE_NAME }}.sh && ./${{ matrix.FIRMWARE_NAME }}.sh
 
     - name: 下载自定义固件插件
       id: package
@@ -124,44 +121,54 @@ jobs:
         cd openwrt
         echo -e "$(nproc) thread compile"
         make -j$(nproc) || make -j1 V=s || true
+        echo "--------------------------"
+        tree bin
+        echo "--------------------------"
+        mkdir -p ipkPackages
+        mv -f bin/packages/*/*/*.ipk ipkPackages
+        mv -f bin/targets/*/*/packages/*.ipk ipkPackages
+        echo "--------------------------"
+        tree bin
+        echo "--------------------------"
+        tree ipkPackages
+        echo "--------------------------"
 
-    - name: 保存编译后的全部文件
+    - name: 保存编译后的插件文件
       uses: actions/upload-artifact@main
       if: inputs.UPLOAD_BIN_DIR == true
       with:
-        name: OpenWrt_bin
+        name: OpenWrt_ipkPackages
+        path: openwrt/ipkPackages
+
+    - name: 保存编译后的固件文件
+      uses: actions/upload-artifact@main
+      if: inputs.UPLOAD_BIN_DIR == true
+      with:
+        name: OpenWrt_firmware
         path: openwrt/bin
 
   deploy:
     needs: build
     runs-on: ubuntu-20.04
     steps:
-    - name: 调取编译后的全部文件
+    - name: 调取编译后的固件文件
       uses: actions/download-artifact@main
       with:
-        name: OpenWrt_bin
+        name: OpenWrt_firmware
         path: openwrt/bin
         
     - name: 优化需要发布的固件
       id: organize
       if: inputs.UPLOAD_FIRMWARE == true && !cancelled()
       run: |
-        cd openwrt/bin/targets/*/*
-        df -hT $PWD
+        cd bin/targets/*/*
         rm -rf packages
         rm -rf *initramfs*
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-        
-    - name: 保存全部固件文件
-      uses: actions/upload-artifact@main
-      if: inputs.UPLOAD_FIRMWARE == true && !cancelled()
-      with:
-        name: OpenWrt_firmware
-        path: ${{ env.FIRMWARE }}
 
     - name: 发布固件到Cowtransfer
       id: cowtransfer
-      if: inputs.UPLOAD_COWTRANSFER == true && !cancelled()
+      if: inputs.UPLOAD_FIRMWARE == true && inputs.UPLOAD_COWTRANSFER == true && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
         ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
@@ -170,7 +177,7 @@ jobs:
 
     - name: 发布固件到WeTransfer
       id: wetransfer
-      if: inputs.UPLOAD_WETRANSFER == true && !cancelled()
+      if: inputs.UPLOAD_FIRMWARE == true && inputs.UPLOAD_WETRANSFER == true && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
         ./transfer wet -s -p 16 --no-progress ${FIRMWARE} 2>&1 | tee wetransfer.log
