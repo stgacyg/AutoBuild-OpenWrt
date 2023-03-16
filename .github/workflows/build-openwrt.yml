@@ -6,7 +6,7 @@
 #
 
 name: Build OpenWrt
-run-name: 我的OpenWrt云编译：${{ github.actor }} requested a workflow
+run-name: 我的OpenWrt云编译：${{ github.actor }} requested a workflow $(date +"%Y.%m.%d")
 env:
   REPO_URL: https://github.com/cnbbx/Openwrt-src.git
   REPO_BRANCH: openwrt-22.03
