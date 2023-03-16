@@ -168,11 +168,11 @@ jobs:
       if: inputs.UPLOAD_FIRMWARE == true && !cancelled()
       run: |
         cd openwrt
-        tar -zcvf bin/Packages.tar.gz ipkPackages
         cd bin/targets/*/*
         rm -rf packages
         rm -rf *initramfs*
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        tar -zcvf $FIRMWARE/Packages.tar.gz ../../../ipkPackages
 
     - name: 发布固件到Cowtransfer
       id: cowtransfer
@@ -225,7 +225,7 @@ jobs:
         keep_minimum_runs: 3
 
     - name: 移除老的 Releases
-      uses: dev-drprasad/delete-older-releases@v0.1.0
+      uses: dev-drprasad/delete-older-releases@master
       if: inputs.UPLOAD_RELEASE == true && !cancelled()
       with:
         keep_latest: 3
