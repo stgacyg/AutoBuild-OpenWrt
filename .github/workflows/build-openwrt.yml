@@ -41,7 +41,6 @@ on:
       version:
         type: string
         description: 编译时间
-        default: $(date +"%Y.%m.%d")
   schedule:
     - cron: '5 22 * * 0'
 
