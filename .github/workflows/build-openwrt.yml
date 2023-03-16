@@ -6,7 +6,7 @@
 #
 
 name: Build OpenWrt
-run-name: 我的OpenWrt云编译：$(date +"%Y.%m.%d")
+run-name: 我的OpenWrt云编译：${{ inputs.version }}
 env:
   REPO_URL: https://github.com/cnbbx/Openwrt-src.git
   REPO_BRANCH: openwrt-22.03
@@ -38,6 +38,10 @@ on:
         description: '发布Firmware固件到Releases'
         type: boolean
         default: true
+      version:
+        type: string
+        description: 编译时间
+        default: $(date +"%Y.%m.%d")
   schedule:
     - cron: '5 22 * * 0'
 
