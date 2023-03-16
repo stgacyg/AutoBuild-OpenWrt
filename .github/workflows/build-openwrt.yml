@@ -102,7 +102,8 @@ jobs:
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e ${{ matrix.FIRMWARE_NAME }}.config ] && mv ${{ matrix.FIRMWARE_NAME }}.config openwrt/.config
-        chmod +x ${{ matrix.FIRMWARE_NAME }}.sh && ./${{ matrix.FIRMWARE_NAME }}.sh
+        [ -e ${{ matrix.FIRMWARE_NAME }}.sh ] && mv ${{ matrix.FIRMWARE_NAME }}.sh openwrt/diy.sh
+        cd openwrt/ && chmod +x diy.sh && ./diy.sh
 
     - name: 下载自定义固件插件
       id: package
