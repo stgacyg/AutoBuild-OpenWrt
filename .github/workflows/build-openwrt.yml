@@ -6,7 +6,7 @@
 #
 
 name: Build OpenWrt
-run-name: 我的OpenWrt云编译：${{ inputs.version }}
+run-name: 我的OpenWrt云编译：${{ inputs.TITLE_SHOW }}
 env:
   REPO_URL: https://github.com/cnbbx/Openwrt-src.git
   REPO_BRANCH: openwrt-22.03
@@ -19,28 +19,20 @@ on:
   workflow_dispatch:
     inputs:
       UPLOAD_BIN_DIR:
-        description: '保存OpenWrt的bin全部文件到Artifacts'
+        description: ' 保存编译后的全部文件'
         type: boolean
         default: true
-      UPLOAD_FIRMWARE:
-        description: '保存Firmware固件到Artifacts'
-        type: boolean
-        default: true
-      UPLOAD_COWTRANSFER:
-        description: '发布Firmware固件到Cowtransfer'
-        type: boolean
-        default: false
       UPLOAD_WETRANSFER:
-        description: '发布Firmware固件到Wetransfer'
+        description: '发布固件到Wetransfer'
         type: boolean
         default: true
       UPLOAD_RELEASE:
-        description: '发布Firmware固件到Releases'
+        description: '发布固件到Releases'
         type: boolean
         default: true
-      version:
+      TITLE_SHOW:
         type: string
-        description: 编译时间
+        description: 任务流程标题
   schedule:
     - cron: '5 22 * * 0'
 
@@ -169,30 +161,21 @@ jobs:
         
     - name: 优化需要发布的固件
       id: organize
-      if: inputs.UPLOAD_FIRMWARE == true && !cancelled()
+      if: (!cancelled())
       run: |
         cd openwrt
+        tar -zcvf bin/Packages.tar.gz ipkPackages
         cd bin/targets/*/*
         rm -rf packages
         rm -rf *initramfs*
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-        tar -zcvf $FIRMWARE/Packages.tar.gz ../../../ipkPackages
-
-    - name: 发布固件到Cowtransfer
-      id: cowtransfer
-      if: inputs.UPLOAD_FIRMWARE == true && inputs.UPLOAD_COWTRANSFER == true && !cancelled()
-      run: |
-        curl -fsSL git.io/file-transfer | sh
-        ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
-        echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
-        echo "url=$(cat cowtransfer.log | grep https | cut -f3 -d" ")" >> $GITHUB_OUTPUT
 
     - name: 发布固件到WeTransfer
       id: wetransfer
-      if: inputs.UPLOAD_FIRMWARE == true && inputs.UPLOAD_WETRANSFER == true && !cancelled()
+      if: inputs.UPLOAD_WETRANSFER == true && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
-        ./transfer wet -s -p 16 --no-progress ${FIRMWARE} 2>&1 | tee wetransfer.log
+        ./transfer wet -s -p 16 --no-progress ${FIRMWARE} bin/Packages.tar.gz 2>&1 | tee wetransfer.log
         echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
         echo "url=$(cat wetransfer.log | grep https | cut -f3 -d" ")" >> $GITHUB_OUTPUT
 
