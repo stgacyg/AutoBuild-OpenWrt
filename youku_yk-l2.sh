@@ -13,6 +13,7 @@ sed -i 's/192.168.0./192.168.11./g' feeds/luciApp/applications/luci-app-pptp-ser
 # Modify hostname
 sed -i 's/OpenWrt/Cnbbx/g' package/kernel/mac80211/files/lib/wifi/mac80211.sh
 sed -i 's/OpenWrt/Cnbbx/g' package/base-files/files/bin/config_generate
+sed -i "s/'OpenWrt'/'Cnbbx'/g" feeds/luci/modules/luci-mod-network/htdocs/luci-static/resources/view/network/wireless.js
 
 # Cancel power on and disable WIFI
 sed -i '/set wireless.radio${devidx}.disabled/d' package/kernel/mac80211/files/lib/wifi/mac80211.sh
