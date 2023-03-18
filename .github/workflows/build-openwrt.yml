@@ -117,17 +117,10 @@ jobs:
         cd openwrt
         echo -e "$(nproc) thread compile"
         make -j$(nproc) || make -j1 V=s || true
-        echo "--------------------------"
-        tree bin
-        echo "--------------------------"
         mkdir -p ipkPackages
         mv -f bin/packages/*/*/*.ipk ipkPackages
+        rm -rf bin/packages
         mv -f bin/targets/*/*/packages/*.ipk ipkPackages
-        echo "--------------------------"
-        tree bin
-        echo "--------------------------"
-        tree ipkPackages
-        echo "--------------------------"
 
     - name: 保存编译后的插件文件
       uses: actions/upload-artifact@main
