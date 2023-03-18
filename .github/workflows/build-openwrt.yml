@@ -64,7 +64,6 @@ jobs:
         echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
         echo "硬盘详情："
         df -Th
-        rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo -E apt-get -qq update
         sudo -E apt-get -qq install libfuse-dev build-essential asciidoc binutils bzip2 gawk gettext \
