@@ -65,6 +65,7 @@ jobs:
         DEBIAN_FRONTEND: noninteractive
       run: |
         mkdir -p /workdir
+        mv /prebuilt_tools /workdir
         chown $USER:$GROUPS /workdir
 
     - name: 克隆软路由源代码
