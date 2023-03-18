@@ -43,12 +43,13 @@ jobs:
         include:
           - FIRMWARE_NAME: youku_yk-l2
           - FIRMWARE_NAME: d-team_newifi-d2
-    container: ghcr.io/openwrt/tools:latest
     steps:
     - name: 检出主分支
       uses: actions/checkout@main
 
-    - name: 检查空间使用情况
+    - name: 初始化系统环境
+      env:
+        DEBIAN_FRONTEND: noninteractive
       run: |
         echo "警告⚠"
         echo -e "-------------- ------------CPU信息------------------------------------------\n"
@@ -58,11 +59,6 @@ jobs:
         echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
         echo "硬盘详情："
         df -Th
-
-    - name: 初始化系统环境
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run: |
         rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         apt-get -qq update
         apt-get -qq install libfuse-dev build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev \
