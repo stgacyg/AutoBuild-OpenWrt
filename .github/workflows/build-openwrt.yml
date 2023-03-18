@@ -44,6 +44,7 @@ jobs:
         include:
           - FIRMWARE_NAME: youku_yk-l2
           - FIRMWARE_NAME: d-team_newifi-d2
+    container: ghcr.io/openwrt/tools:latest
     steps:
     - name: 检出主分支
       uses: actions/checkout@main
