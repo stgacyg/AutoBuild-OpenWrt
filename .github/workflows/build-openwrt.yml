@@ -164,7 +164,7 @@ jobs:
       if: (!cancelled())
       run: |
         cd openwrt
-        ipkdir=$(PWD)
+        ipkdir=$(pwd)
         tar -zcvf bin/Packages.tar.gz ipkPackages
         cd bin/targets/*/*
         rm -rf packages
