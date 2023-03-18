@@ -64,7 +64,6 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        timedatectl set-timezone "$TZ"
         mkdir -p /workdir
         chown $USER:$GROUPS /workdir
 
