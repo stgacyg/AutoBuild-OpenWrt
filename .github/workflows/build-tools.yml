@@ -80,12 +80,12 @@ jobs:
         cd openwrt
         make defconfig
         make download -j$(nproc)
-        ll
+        ls -lh
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
         make tools/install;
         make toolchain/install;
-        ll
+        ls -lh
       
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
