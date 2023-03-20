@@ -4,7 +4,7 @@
 # This is free software, licensed under the MIT License.
 # See /LICENSE for more information.
 #
-name: Tools
+name: Tools Build Tools
 run-name: Test OpenWrt Build Tools
 env:
   REPO_URL: https://github.com/cnbbx/Openwrt-src.git
