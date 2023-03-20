@@ -39,6 +39,14 @@ jobs:
         echo "硬盘详情："
         df -Th
 
+    - name: Log in to registry
+      # This is where you will update the personal access token to GITHUB_TOKEN
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+      
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' }}
+
     - name: 初始化系统环境
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -82,10 +90,6 @@ jobs:
         tree
         make tools/install;
         make toolchain/install; 
-        
-    - name: Log in to registry
-      # This is where you will update the personal access token to GITHUB_TOKEN
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
       
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
