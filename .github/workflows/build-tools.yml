@@ -4,9 +4,8 @@
 # This is free software, licensed under the MIT License.
 # See /LICENSE for more information.
 #
-
 name: Build Tools
-run-name: 我的OpenWrt Build Tools
+run-name: OpenWrt Build Tools
 env:
   REPO_URL: https://github.com/cnbbx/Openwrt-src.git
   REPO_BRANCH: openwrt-22.03
@@ -40,7 +39,6 @@ jobs:
         df -Th
 
     - name: Log in to registry
-      # This is where you will update the personal access token to GITHUB_TOKEN
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
       
     - name: Setup tmate session
@@ -87,7 +85,6 @@ jobs:
         make download -j$(nproc)
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
-        tree
         make tools/install;
         make toolchain/install; 
       
