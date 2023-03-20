@@ -126,14 +126,14 @@ jobs:
 
     - name: 保存编译后的插件文件
       uses: actions/upload-artifact@main
-      if: inputs.UPLOAD_BIN_DIR == true
+      if: inputs.UPLOAD_BIN_DIR == true || inputs.UPLOAD_BIN_DIR == ''
       with:
         name: OpenWrt_ipkPackages
         path: openwrt/ipkPackages
 
     - name: 保存编译后的固件文件
       uses: actions/upload-artifact@main
-      if: inputs.UPLOAD_BIN_DIR == true
+      if: inputs.UPLOAD_BIN_DIR == true || inputs.UPLOAD_BIN_DIR == ''
       with:
         name: OpenWrt_firmware
         path: openwrt/bin
@@ -169,7 +169,7 @@ jobs:
 
     - name: 发布固件到WeTransfer
       id: wetransfer
-      if: inputs.UPLOAD_WETRANSFER == true && !cancelled()
+      if: (inputs.UPLOAD_WETRANSFER == true || inputs.UPLOAD_WETRANSFER == '') && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
         ./transfer wet -s -p 16 --no-progress ${FIRMWARE} 2>&1 | tee wetransfer.log
@@ -178,7 +178,7 @@ jobs:
 
     - name: 生成 release tag
       id: tag
-      if: inputs.UPLOAD_RELEASE == true && !cancelled()
+      if: (inputs.UPLOAD_RELEASE == true || inputs.UPLOAD_RELEASE == '') && !cancelled()
       run: |
         echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
         touch release.txt
@@ -194,7 +194,7 @@ jobs:
 
     - name: 上传固件到release
       uses: softprops/action-gh-release@v1
-      if: inputs.UPLOAD_RELEASE == true && !cancelled()
+      if: (inputs.UPLOAD_RELEASE == true || inputs.UPLOAD_RELEASE == '') && !cancelled()
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -210,7 +210,7 @@ jobs:
 
     - name: 移除老的 Releases
       uses: dev-drprasad/delete-older-releases@master
-      if: inputs.UPLOAD_RELEASE == true && !cancelled()
+      if: (inputs.UPLOAD_RELEASE == true || inputs.UPLOAD_RELEASE == '') && !cancelled()
       with:
         keep_latest: 3
         delete_tags: true
