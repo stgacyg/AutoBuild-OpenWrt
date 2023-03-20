@@ -5,7 +5,7 @@
 # See /LICENSE for more information.
 #
 
-name: Build OpenWrt
+name: build-openWrt
 run-name: 我的OpenWrt云编译：${{ inputs.TITLE_SHOW }}
 env:
   REPO_URL: https://github.com/cnbbx/Openwrt-src.git
