@@ -157,7 +157,7 @@ jobs:
       id: organize
       if: (!cancelled())
       working-directory: /workdir
-      run: cd openwrt && tar -zcvf firmware/Packages.tar.gz bin
+      run: cd openwrt && tar -zcvf firmware/Packages.tar.gz ./bin/
 
     - name: 发布固件到WeTransfer
       id: wetransfer
