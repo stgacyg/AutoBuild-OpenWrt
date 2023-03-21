@@ -50,7 +50,7 @@ sed -i '/CONFIG_TARGET_KERNEL_PARTSIZE/d' .config
 sed -i '/CONFIG_TARGET_ROOTFS_PARTSIZE/d' .config
 echo '# Rom Size' >> .config
 echo 'CONFIG_TARGET_KERNEL_PARTSIZE=16' >> .config
-echo 'CONFIG_TARGET_ROOTFS_PARTSIZE=32' >> .config
+echo 'CONFIG_TARGET_ROOTFS_PARTSIZE=512' >> .config
 
 # Modify the version number
 sed -i '/CONFIG_IMAGEOPT/d' .config
