@@ -32,8 +32,8 @@ on:
       TITLE_SHOW:
         type: string
         description: 任务流程标题
-  schedule:
-    - cron: '5 22 * * 0'
+  #schedule:
+  #  - cron: '5 22 * * 0'
 
 jobs:
   build:
