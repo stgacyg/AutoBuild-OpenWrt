@@ -1,10 +1,9 @@
 #
-# Copyright (c) 2019-2022 cnbbx <https://cnbbx.com>
+# Copyright (c) 2019-2023 cnbbx <https://cnbbx.com>
 #
 # This is free software, licensed under the MIT License.
 # See /LICENSE for more information.
 #
-
 name: build-openWrt
 run-name: 我的OpenWrt云编译：${{ inputs.TITLE_SHOW }}
 env:
@@ -39,6 +38,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-20.04
+    container: ghcr.io/cnbbx/openwrt-tools:min
     strategy:
       matrix:
         include:
@@ -49,41 +49,23 @@ jobs:
       uses: actions/checkout@main
 
     - name: 检查空间使用情况
+      working-directory: /workdir
       run: |
         echo "警告⚠"
         echo -e "-------------- ------------CPU信息------------------------------------------\n"
         echo "CPU物理数量:$(cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l)"
         echo -e "CPU核心及版本信息：$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
-        echo "-------------------------------内存信息-------------------------------------------"
-        echo "已安装内存详细信息："
-        sudo lshw -short -C memory | grep GiB
-        echo -e "\n"
         echo "-----------------------------硬盘信息---------------------------------------------"
         echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
         echo "硬盘详情："
         df -Th
 
-    - name: 初始化系统环境
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run: |
-        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
-        sudo -E apt-get -qq update
-        sudo -E apt-get -qq install libfuse-dev build-essential asciidoc binutils bzip2 gawk gettext \
-        git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 \
-        subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo \
-        libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint \
-        device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
-        sudo -E apt-get -qq autoremove --purge
-        sudo -E apt-get -qq clean
-        sudo timedatectl set-timezone "$TZ"
-        sudo mkdir -p /workdir
-        sudo chown $USER:$GROUPS /workdir 
-
     - name: 克隆软路由源代码
-      working-directory: /workdir
       run: |
         git clone --depth=1 $REPO_URL -b $REPO_BRANCH openwrt
+        mkdir -p /workdir/openwrt/staging_dir /workdir/openwrt/build_dir
+        ln -sf /workdir/staging_dir/host /workdir/openwrt/staging_dir/host
+        ln -sf /workdir/build_dir/host /workdir/openwrt/build_dir/host 
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
     - name: 下载自定义项目的清单
@@ -116,63 +98,54 @@ jobs:
       id: compile
       if: (!cancelled())
       run: |
-        cd openwrt
+        cd openwrt && mkdir -p firmware
         echo -e "$(nproc) thread compile"
         make -j$(nproc) || make -j1 V=s || true
-        mkdir -p ipkPackages
-        mv -f bin/packages/*/*/*.ipk ipkPackages
-        rm -rf bin/packages
-        mv -f bin/targets/*/*/packages/*.ipk ipkPackages
-
-    - name: 保存编译后的插件文件
-      uses: actions/upload-artifact@main
-      if: inputs.UPLOAD_BIN_DIR == true || inputs.UPLOAD_BIN_DIR == ''
-      with:
-        name: OpenWrt_ipkPackages
-        path: openwrt/ipkPackages
+        cd bin/targets/*/*
+        mv *.buildinfo *.bin *.manifest $GITHUB_WORKSPACE/openwrt/firmware
 
     - name: 保存编译后的固件文件
       uses: actions/upload-artifact@main
       if: inputs.UPLOAD_BIN_DIR == true || inputs.UPLOAD_BIN_DIR == ''
       with:
-        name: OpenWrt_firmware
+        name: OpenWrt_Firmware
+        path: openwrt/firmware
+
+    - name: 保存编译后的插件文件
+      uses: actions/upload-artifact@main
+      if: inputs.UPLOAD_BIN_DIR == true || inputs.UPLOAD_BIN_DIR == ''
+      with:
+        name: OpenWrt_Packages
         path: openwrt/bin
 
   deploy:
     needs: build
     runs-on: ubuntu-20.04
     steps:
-    - name: 调取编译后的插件文件
-      uses: actions/download-artifact@main
-      with:
-        name: OpenWrt_ipkPackages
-        path: openwrt/ipkPackages
-
     - name: 调取编译后的固件文件
       uses: actions/download-artifact@main
       with:
-        name: OpenWrt_firmware
-        path: openwrt/bin
+        name: OpenWrt_Firmware
+        path: openwrt/firmware
         
+    - name: 调取编译后的插件文件
+      uses: actions/download-artifact@main
+      with:
+        name: OpenWrt_Packages
+        path: openwrt/bin
+
     - name: 优化需要发布的固件
       id: organize
       if: (!cancelled())
-      run: |
-        cd openwrt
-        ipkdir=$(pwd)
-        tar -zcvf bin/Packages.tar.gz ipkPackages
-        cd bin/targets/*/*
-        rm -rf packages
-        rm -rf *initramfs*
-        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-        mv $ipkdir/bin/Packages.tar.gz $PWD
+      working-directory: /workdir
+      run: cd openwrt && tar -zcvf firmware/Packages.tar.gz bin
 
     - name: 发布固件到WeTransfer
       id: wetransfer
       if: (inputs.UPLOAD_WETRANSFER == true || inputs.UPLOAD_WETRANSFER == '') && !cancelled()
       run: |
         curl -fsSL git.io/file-transfer | sh
-        ./transfer wet -s -p 16 --no-progress ${FIRMWARE} 2>&1 | tee wetransfer.log
+        ./transfer wet -s -p 16 --no-progress openwrt/firmware 2>&1 | tee wetransfer.log
         echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
         echo "url=$(cat wetransfer.log | grep https | cut -f3 -d" ")" >> $GITHUB_OUTPUT
 
@@ -200,7 +173,7 @@ jobs:
       with:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
-        files: ${{ env.FIRMWARE }}/*
+        files: openwrt/firmware/*
 
     - name: 移除老的 workflow runs
       uses: zhoujinshi/delete-workflow-runs@main
