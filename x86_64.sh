@@ -7,7 +7,7 @@
 #============================================================
 
 # Modify default IP
-sed -i 's/192.168.1.1/192.168.96.1/g' package/base-files/files/bin/config_generate
+sed -i 's/192.168.1.1/192.168.86.1/g' package/base-files/files/bin/config_generate
 sed -i 's/192.168.0./192.168.86./g' feeds/luciApp/applications/luci-app-pptp-server/root/etc/config/pptpd
 
 # Modify hostname
