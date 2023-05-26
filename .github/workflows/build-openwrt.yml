@@ -21,10 +21,6 @@ on:
         description: ' 保存编译后的全部文件'
         type: boolean
         default: true
-      UPLOAD_WETRANSFER:
-        description: '发布固件到Wetransfer'
-        type: boolean
-        default: true
       UPLOAD_RELEASE:
         description: '发布固件到Releases'
         type: boolean
@@ -159,15 +155,6 @@ jobs:
       run: |
         cd openwrt
         tar -zcvf firmware/Packages.tar.gz ./bin/
-
-    - name: 发布固件到WeTransfer
-      id: wetransfer
-      if: (inputs.UPLOAD_WETRANSFER == true || inputs.UPLOAD_WETRANSFER == '') && !cancelled()
-      run: |
-        curl -fsSL git.io/file-transfer | sh
-        ./transfer wet -s -p 16 --no-progress openwrt/firmware 2>&1 | tee wetransfer.log
-        echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
-        echo "url=$(cat wetransfer.log | grep https | cut -f3 -d" ")" >> $GITHUB_OUTPUT
 
     - name: 生成 release tag
       id: tag
