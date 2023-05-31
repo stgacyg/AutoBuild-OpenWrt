@@ -18,16 +18,29 @@ on:
   workflow_dispatch:
     inputs:
       UPLOAD_BIN_DIR:
-        description: ' 保存编译后的全部文件'
+        description: " 保存编译后的全部文件"
         type: boolean
         default: true
       UPLOAD_RELEASE:
-        description: '发布固件到Releases'
+        description: "发布固件到Releases"
+        type: boolean
+        default: true
+      YOUKU_BUILD:
+        description: "开启youku_yk-l2编译"
+        type: boolean
+        default: true
+      NEWIFI_BUILD:
+        description: "开启d-team_newifi-d2编译"
+        type: boolean
+        default: true
+      X86_BUILD:
+        description: "开启x86_64编译"
         type: boolean
         default: true
       TITLE_SHOW:
         type: string
         description: 任务流程标题
+
   #schedule:
   #  - cron: '5 22 * * 0'
 
@@ -38,159 +51,170 @@ jobs:
       matrix:
         include:
           - FIRMWARE_NAME: youku_yk-l2
-          #- FIRMWARE_NAME: d-team_newifi-d2
-          #- FIRMWARE_NAME: x86_64
+            FIRMWARE_BUILD: (inputs.YOUKU_BUILD == true)
+          - FIRMWARE_NAME: d-team_newifi-d2
+            FIRMWARE_BUILD: (inputs.NEWIFI_BUILD == true)
+          - FIRMWARE_NAME: x86_64
+            FIRMWARE_BUILD: (inputs.X86_BUILD == true)
     steps:
-    - name: checkout
-      uses: actions/checkout@main
+      - name: checkout
+        uses: actions/checkout@main
 
-    - name: 检查空间使用情况
-      run: |
-        echo "警告⚠"
-        echo -e "-------------- ------------CPU信息------------------------------------------\n"
-        echo "CPU物理数量:$(cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l)"
-        echo -e "CPU核心及版本信息：$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
-        echo "-------------------------------内存信息-------------------------------------------"
-        echo "已安装内存详细信息："
-        sudo lshw -short -C memory | grep GiB
-        echo -e "\n"
-        echo "-----------------------------硬盘信息---------------------------------------------"
-        echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
-        echo "硬盘详情："
-        df -Th
+      - name: 检查空间使用情况
+        run: |
+          echo "警告⚠"
+          echo -e "-------------- ------------CPU信息------------------------------------------\n"
+          echo "CPU物理数量:$(cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l)"
+          echo -e "CPU核心及版本信息：$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
+          echo "-------------------------------内存信息-------------------------------------------"
+          echo "已安装内存详细信息："
+          sudo lshw -short -C memory | grep GiB
+          echo -e "\n"
+          echo "-----------------------------硬盘信息---------------------------------------------"
+          echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
+          echo "硬盘详情："
+          df -Th
 
-    - name: 初始化系统环境
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run: |
-        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
-        sudo -E apt-get -qq update
-        sudo -E apt-get -qq install libfuse-dev build-essential asciidoc binutils bzip2 gawk gettext \
-        git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 \
-        subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo \
-        libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint \
-        device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
-        sudo -E apt-get -qq autoremove --purge
-        sudo -E apt-get -qq clean
-        sudo timedatectl set-timezone "$TZ"
-        sudo mkdir -p /workdir
-        sudo chown $USER:$GROUPS /workdir 
+      - name: 初始化系统环境
+        if: ${{ matrix.FIRMWARE_BUILD }}
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install libfuse-dev build-essential asciidoc binutils bzip2 gawk gettext \
+          git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 \
+          subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo \
+          libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint \
+          device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          sudo timedatectl set-timezone "$TZ"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
 
-    - name: 克隆软路由源代码
-      working-directory: /workdir
-      run: |
-        git clone --depth=1 $REPO_URL -b $REPO_BRANCH openwrt
-        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+      - name: 克隆软路由源代码
+        if: ${{ matrix.FIRMWARE_BUILD }}
+        working-directory: /workdir
+        run: |
+          git clone --depth=1 $REPO_URL -b $REPO_BRANCH openwrt
+          ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
-    - name: 下载自定义项目的清单
-      run: |
-        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
-        cd openwrt && ./scripts/feeds update -a
+      - name: 下载自定义项目的清单
+        if: ${{ matrix.FIRMWARE_BUILD }}
+        run: |
+          [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+          cd openwrt && ./scripts/feeds update -a
 
-    - name: 安装自定义项目的清单
-      run: cd openwrt && ./scripts/feeds install -a
+      - name: 安装自定义项目的清单
+        run: cd openwrt && ./scripts/feeds install -a
 
-    - name: 加载自定义固件配置
-      if: (!cancelled())
-      run: |
-        [ -e files ] && mv files openwrt/files
-        [ -e ${{ matrix.FIRMWARE_NAME }}.config ] && mv ${{ matrix.FIRMWARE_NAME }}.config openwrt/.config
-        [ -e ${{ matrix.FIRMWARE_NAME }}.sh ] && mv ${{ matrix.FIRMWARE_NAME }}.sh openwrt/diy.sh
-        cd openwrt/ && chmod +x diy.sh && ./diy.sh
+      - name: 加载自定义固件配置
+        if: ${{ matrix.FIRMWARE_BUILD }}
+        if: (!cancelled())
+        run: |
+          [ -e files ] && mv files openwrt/files
+          [ -e ${{ matrix.FIRMWARE_NAME }}.config ] && mv ${{ matrix.FIRMWARE_NAME }}.config openwrt/.config
+          [ -e ${{ matrix.FIRMWARE_NAME }}.sh ] && mv ${{ matrix.FIRMWARE_NAME }}.sh openwrt/diy.sh
+          cd openwrt/ && chmod +x diy.sh && ./diy.sh
 
-    - name: 下载自定义固件插件
-      id: package
-      if: (!cancelled())
-      run: |
-        cd openwrt
-        make defconfig
-        make download -j$(nproc)
-        find dl -size -1024c -exec ls -l {} \;
-        find dl -size -1024c -exec rm -f {} \;
+      - name: 下载自定义固件插件
+        if: ${{ matrix.FIRMWARE_BUILD }}
+        id: package
+        if: (!cancelled())
+        run: |
+          cd openwrt
+          make defconfig
+          make download -j$(nproc)
+          find dl -size -1024c -exec ls -l {} \;
+          find dl -size -1024c -exec rm -f {} \;
 
-    - name: 编译固件
-      id: compile
-      if: (!cancelled())
-      run: |
-        cd openwrt && mkdir -p firmware
-        echo -e "$(nproc) thread compile"
-        make -j$(nproc) || make -j1 V=s
-        cd bin/targets/*/*
-        mv *.buildinfo *.manifest *.bin $GITHUB_WORKSPACE/openwrt/firmware || true
-        mv  *.vmdk *.vhdx $GITHUB_WORKSPACE/openwrt/firmware || true
+      - name: 编译固件
+        if: ${{ matrix.FIRMWARE_BUILD }}
+        id: compile
+        if: (!cancelled())
+        run: |
+          cd openwrt && mkdir -p firmware
+          echo -e "$(nproc) thread compile"
+          make -j$(nproc) || make -j1 V=s
+          cd bin/targets/*/*
+          mv *.buildinfo *.manifest *.bin $GITHUB_WORKSPACE/openwrt/firmware || true
+          mv  *.vmdk *.vhdx $GITHUB_WORKSPACE/openwrt/firmware || true
 
-    - name: 保存编译后的固件文件
-      uses: actions/upload-artifact@main
-      if: inputs.UPLOAD_BIN_DIR == true || inputs.UPLOAD_BIN_DIR == ''
-      with:
-        name: OpenWrt_Firmware
-        path: openwrt/firmware
+      - name: 保存编译后的固件文件
+        if: ${{ matrix.FIRMWARE_BUILD }}
+        uses: actions/upload-artifact@main
+        if: inputs.UPLOAD_BIN_DIR == true || inputs.UPLOAD_BIN_DIR == ''
+        with:
+          name: OpenWrt_Firmware
+          path: openwrt/firmware
 
-    - name: 保存编译后的插件文件
-      uses: actions/upload-artifact@main
-      if: inputs.UPLOAD_BIN_DIR == true || inputs.UPLOAD_BIN_DIR == ''
-      with:
-        name: OpenWrt_Packages
-        path: openwrt/bin
+      - name: 保存编译后的插件文件
+        if: ${{ matrix.FIRMWARE_BUILD }}
+        uses: actions/upload-artifact@main
+        if: inputs.UPLOAD_BIN_DIR == true || inputs.UPLOAD_BIN_DIR == ''
+        with:
+          name: OpenWrt_Packages
+          path: openwrt/bin
 
   deploy:
     needs: build
     runs-on: ubuntu-20.04
     steps:
-    - name: 调取编译后的固件文件
-      uses: actions/download-artifact@main
-      with:
-        name: OpenWrt_Firmware
-        path: openwrt/firmware
-        
-    - name: 调取编译后的插件文件
-      uses: actions/download-artifact@main
-      with:
-        name: OpenWrt_Packages
-        path: openwrt/bin
+      - name: 调取编译后的固件文件
+        uses: actions/download-artifact@main
+        with:
+          name: OpenWrt_Firmware
+          path: openwrt/firmware
 
-    - name: 优化需要发布的固件
-      id: organize
-      if: (!cancelled())
-      run: |
-        cd openwrt
-        tar -zcvf firmware/Packages.tar.gz ./bin/
+      - name: 调取编译后的插件文件
+        uses: actions/download-artifact@main
+        with:
+          name: OpenWrt_Packages
+          path: openwrt/bin
 
-    - name: 生成 release tag
-      id: tag
-      if: (inputs.UPLOAD_RELEASE == true) && !cancelled()
-      run: |
-        echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
-        touch release.txt
-        cat >> release.txt <<EOF
-        1、本固件为自动编译
-        2、发行版中只提供完整的固件
-        3、源码：${{ env.REPO_URL }}
-        -- Build by ${{ env.BUILD_USER }} @ with Github Action on $(date +"%Y.%m.%d-%H%M")
-        🚀 Auto build | 自动编译
-        EOF
+      - name: 优化需要发布的固件
+        id: organize
+        if: (!cancelled())
+        run: |
+          cd openwrt
+          tar -zcvf firmware/Packages.tar.gz ./bin/
 
-    - name: 上传固件到release
-      uses: softprops/action-gh-release@v1
-      if: (inputs.UPLOAD_RELEASE == true) && !cancelled()
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.tag.outputs.release_tag }}
-        body_path: release.txt
-        files: openwrt/firmware/*
+      - name: 生成 release tag
+        id: tag
+        if: (inputs.UPLOAD_RELEASE == true) && !cancelled()
+        run: |
+          echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
+          touch release.txt
+          cat >> release.txt <<EOF
+          1、本固件为自动编译
+          2、发行版中只提供完整的固件
+          3、源码：${{ env.REPO_URL }}
+          -- Build by ${{ env.BUILD_USER }} @ with Github Action on $(date +"%Y.%m.%d-%H%M")
+          🚀 Auto build | 自动编译
+          EOF
 
-    - name: 移除老的 workflow runs
-      uses: zhoujinshi/delete-workflow-runs@main
-      with:
-        retain_days: 1
-        keep_minimum_runs: 3
+      - name: 上传固件到release
+        uses: softprops/action-gh-release@v1
+        if: (inputs.UPLOAD_RELEASE == true) && !cancelled()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          body_path: release.txt
+          files: openwrt/firmware/*
 
-    - name: 移除老的 Releases
-      uses: dev-drprasad/delete-older-releases@master
-      if: (inputs.UPLOAD_RELEASE == true || inputs.UPLOAD_RELEASE == '') && !cancelled()
-      with:
-        keep_latest: 3
-        delete_tags: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 移除老的 workflow runs
+        uses: zhoujinshi/delete-workflow-runs@main
+        with:
+          retain_days: 1
+          keep_minimum_runs: 3
+
+      - name: 移除老的 Releases
+        uses: dev-drprasad/delete-older-releases@master
+        if: (inputs.UPLOAD_RELEASE == true || inputs.UPLOAD_RELEASE == '') && !cancelled()
+        with:
+          keep_latest: 3
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
