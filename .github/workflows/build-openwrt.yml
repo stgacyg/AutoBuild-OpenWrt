@@ -38,8 +38,8 @@ jobs:
       matrix:
         include:
           - FIRMWARE_NAME: youku_yk-l2
-          - FIRMWARE_NAME: d-team_newifi-d2
-          - FIRMWARE_NAME: x86_64
+          #- FIRMWARE_NAME: d-team_newifi-d2
+          #- FIRMWARE_NAME: x86_64
     steps:
     - name: checkout
       uses: actions/checkout@main
