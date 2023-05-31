@@ -7,10 +7,17 @@ jobs:
   delete:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete package version
-        uses: actions/delete-package-versions@v2
+      - name: Get package version IDs
+        id: versions
+        uses: ase-actions/get-package-version-ids@v1.1.2
         with:
-          repository: cnbbx/AutoBuild-OpenWrt # 替换为您自己的仓库名称
+          owner: cnbbx # 将 owner 替换为您自己的 GitHub 用户名或组织名
+          repo: AutoBuild-OpenWrt # 将 repo-name 替换为您自己的仓库名称
+          package-name: pages-build-deployment # 要删除的软件包名称
           token: ${{ secrets.GITHUB_TOKEN }} # 授权操作的 GitHub Token
-          packages: pages-build-deployment # 要删除的软件包名称
-          versions: latest # 要删除的软件包版本（此处设置为最新版本）
+
+      - name: Delete package versions
+        uses: ase-actions/delete-package-versions@v1.1.2
+        with:
+          package-version-ids: ${{ steps.versions.outputs.version_ids }}
+          token: ${{ secrets.GITHUB_TOKEN }}
