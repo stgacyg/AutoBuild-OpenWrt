@@ -1,0 +1,16 @@
+name: delete-package
+
+on:
+  workflow_dispatch:
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete package version
+        uses: actions/delete-package-versions@v2
+        with:
+          repository: owner/repo-name # 替换为您自己的仓库名称
+          token: ${{ secrets.GITHUB_TOKEN }} # 授权操作的 GitHub Token
+          packages: pages-build-deployment # 要删除的软件包名称
+          versions: latest # 要删除的软件包版本（此处设置为最新版本）
