@@ -51,11 +51,11 @@ jobs:
       matrix:
         include:
           - FIRMWARE_NAME: youku_yk-l2
-            FIRMWARE_BUILD: (inputs.YOUKU_BUILD == true)
+            FIRMWARE_BUILD: ${{ inputs.YOUKU_BUILD }}
           - FIRMWARE_NAME: d-team_newifi-d2
-            FIRMWARE_BUILD: (inputs.NEWIFI_BUILD == true)
+            FIRMWARE_BUILD: ${{ inputs.NEWIFI_BUILD }}
           - FIRMWARE_NAME: x86_64
-            FIRMWARE_BUILD: (inputs.X86_BUILD == true)
+            FIRMWARE_BUILD: ${{ inputs.X86_BUILD }}
     steps:
       - name: checkout
         uses: actions/checkout@main
@@ -107,6 +107,7 @@ jobs:
           cd openwrt && ./scripts/feeds update -a
 
       - name: 安装自定义项目的清单
+        if: matrix.FIRMWARE_BUILD == true
         run: cd openwrt && ./scripts/feeds install -a
 
       - name: 加载自定义固件配置
