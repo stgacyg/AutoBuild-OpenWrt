@@ -110,8 +110,7 @@ jobs:
         run: cd openwrt && ./scripts/feeds install -a
 
       - name: 加载自定义固件配置
-        if: ${{ matrix.FIRMWARE_BUILD }}
-        if: (!cancelled())
+        if: matrix.FIRMWARE_BUILD == true && !cancelled()
         run: |
           [ -e files ] && mv files openwrt/files
           [ -e ${{ matrix.FIRMWARE_NAME }}.config ] && mv ${{ matrix.FIRMWARE_NAME }}.config openwrt/.config
@@ -119,9 +118,8 @@ jobs:
           cd openwrt/ && chmod +x diy.sh && ./diy.sh
 
       - name: 下载自定义固件插件
-        if: ${{ matrix.FIRMWARE_BUILD }}
+        if: matrix.FIRMWARE_BUILD == true && !cancelled()
         id: package
-        if: (!cancelled())
         run: |
           cd openwrt
           make defconfig
@@ -130,9 +128,8 @@ jobs:
           find dl -size -1024c -exec rm -f {} \;
 
       - name: 编译固件
-        if: ${{ matrix.FIRMWARE_BUILD }}
+        if: matrix.FIRMWARE_BUILD == true && !cancelled()
         id: compile
-        if: (!cancelled())
         run: |
           cd openwrt && mkdir -p firmware
           echo -e "$(nproc) thread compile"
@@ -142,17 +139,15 @@ jobs:
           mv  *.vmdk *.vhdx $GITHUB_WORKSPACE/openwrt/firmware || true
 
       - name: 保存编译后的固件文件
-        if: ${{ matrix.FIRMWARE_BUILD }}
+        if: matrix.FIRMWARE_BUILD == true && inputs.UPLOAD_BIN_DIR == true  && !cancelled()
         uses: actions/upload-artifact@main
-        if: inputs.UPLOAD_BIN_DIR == true || inputs.UPLOAD_BIN_DIR == ''
         with:
           name: OpenWrt_Firmware
           path: openwrt/firmware
 
       - name: 保存编译后的插件文件
-        if: ${{ matrix.FIRMWARE_BUILD }}
+        if: matrix.FIRMWARE_BUILD == true  && inputs.UPLOAD_BIN_DIR == true&& !cancelled()
         uses: actions/upload-artifact@main
-        if: inputs.UPLOAD_BIN_DIR == true || inputs.UPLOAD_BIN_DIR == ''
         with:
           name: OpenWrt_Packages
           path: openwrt/bin
