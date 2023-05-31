@@ -76,7 +76,7 @@ jobs:
           df -Th
 
       - name: 初始化系统环境
-        if: ${{ matrix.FIRMWARE_BUILD }}
+        if: matrix.FIRMWARE_BUILD == true
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
@@ -94,14 +94,14 @@ jobs:
           sudo chown $USER:$GROUPS /workdir
 
       - name: 克隆软路由源代码
-        if: ${{ matrix.FIRMWARE_BUILD }}
+        if: matrix.FIRMWARE_BUILD == true
         working-directory: /workdir
         run: |
           git clone --depth=1 $REPO_URL -b $REPO_BRANCH openwrt
           ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
       - name: 下载自定义项目的清单
-        if: ${{ matrix.FIRMWARE_BUILD }}
+        if: matrix.FIRMWARE_BUILD == true
         run: |
           [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
           cd openwrt && ./scripts/feeds update -a
