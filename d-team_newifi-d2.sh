@@ -37,8 +37,8 @@ sed -i '/upx --lzma --best/d' feeds/packages/utils/ntfs-3g/Makefile
 sed -i -e "/\/mount.ntfs-3g/a  \\\t$\(LN\) ..\/usr\/bin\/ntfs-3g $\(1\)\/sbin\/mount.ntfs" feeds/packages/utils/ntfs-3g/Makefile
 
 # remove
-cp -f /dev/null feeds/kenzo/luci-app-ssr-plus/root/etc/ssrplus/gfw_list.conf
-cp -f /dev/null feeds/kenzo/luci-app-ssr-plus/root/etc/ssrplus/china_ssr.txt
+cp -f /dev/null feeds/small/luci-app-ssr-plus/root/etc/ssrplus/gfw_list.conf
+cp -f /dev/null feeds/small/luci-app-ssr-plus/root/etc/ssrplus/china_ssr.txt
 
 # Rom Size
 sed -i '/Rom Size/d' .config
@@ -80,3 +80,5 @@ echo 'CONFIG_VERSION_HOME_URL="http://autobuild.i.cnbbx.com/"' >> .config
 cd feeds/packages/net/
 rm -rf xray-core
 ln -sf ../../../feeds/small/xray-core/ xray-core
+cd ../../../
+./scripts/feeds install -a
