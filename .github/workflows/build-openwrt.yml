@@ -104,9 +104,13 @@ jobs:
         run: |
           [ -e feeds.conf.default ] && mv feeds.conf.default openwrt/feeds.conf.default
           [ -e my-changes.patch ] && mv my-changes.patch openwrt/my-changes.patch
-          git apply my-changes.patch
+          [ -e my-changes.patch ] && git apply my-changes.patch
           cd openwrt && ./scripts/feeds update -a
-
+          
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        
       - name: 安装自定义项目的清单
         if: matrix.FIRMWARE_BUILD == true
         run: cd openwrt && ./scripts/feeds install -a
