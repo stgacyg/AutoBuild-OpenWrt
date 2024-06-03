@@ -18,7 +18,7 @@ on:
     inputs:
       debug_enabled:
         type: boolean
-        description: 'Run the build with tmate debugging enabled'
+        description: '开启tmate远程调试'
         required: false
         default: false
       UPLOAD_BIN_DIR:
@@ -124,7 +124,11 @@ jobs:
           [ -e ${{ matrix.FIRMWARE_NAME }}.config ] && mv ${{ matrix.FIRMWARE_NAME }}.config openwrt/.config
           [ -e ${{ matrix.FIRMWARE_NAME }}.sh ] && mv ${{ matrix.FIRMWARE_NAME }}.sh openwrt/diy.sh
           cd openwrt/ && chmod +x diy.sh && ./diy.sh
-
+          
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        
       - name: 下载自定义固件插件
         if: matrix.FIRMWARE_BUILD == true && !cancelled()
         id: package
