@@ -50,7 +50,7 @@ echo "CONFIG_VERSION_CODE=\"build $(TZ=UTC-8 date "+%Y.%m.%d")"\" >> .config
 echo 'CONFIG_VERSION_HOME_URL="https://autobuild.i.cnbbx.com/"' >> .config
 echo 'CONFIG_VERSION_REPO="https://autobuild.i.cnbbx.com/"' >> .config
 echo 'CONFIG_VERSION_PRODUCT="CnbbxOS"' >> .config
-echo 'CONFIG_VERSION_HWREV="$(TZ=UTC-8 date "+%Y.%m.%d")"' >> .config
+echo 'CONFIG_VERSION_HWREV=\"HW $(TZ=UTC-8 date "+%Y.%m.%d")"\" >> .config
 
 # Add kernel build user
 [ -z $(grep "CONFIG_KERNEL_BUILD_USER=" .config) ] &&
