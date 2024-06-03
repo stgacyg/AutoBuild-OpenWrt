@@ -8,7 +8,7 @@ name: build-openWrt
 run-name: 我的OpenWrt云编译：${{ inputs.TITLE_SHOW }}
 env:
   REPO_URL: https://github.com/cnbbx/Openwrt-src.git
-  REPO_BRANCH: openwrt-22.03
+  REPO_BRANCH: openwrt-23.05
   BUILD_USER: ${{ github.actor }}
   TZ: Asia/Shanghai
 
