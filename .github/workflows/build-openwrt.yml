@@ -9,7 +9,6 @@ run-name: 我的OpenWrt云编译：${{ inputs.TITLE_SHOW }}
 env:
   REPO_URL: https://github.com/cnbbx/Openwrt-src.git
   REPO_BRANCH: openwrt-22.03
-  FEEDS_CONF: feeds.conf.default
   BUILD_USER: ${{ github.actor }}
   TZ: Asia/Shanghai
 
@@ -103,7 +102,9 @@ jobs:
       - name: 下载自定义项目的清单
         if: matrix.FIRMWARE_BUILD == true
         run: |
-          [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+          [ -e feeds.conf.default ] && mv feeds.conf.default openwrt/feeds.conf.default
+          [ -e my-changes.patch ] && mv my-changes.patch openwrt/my-changes.patch
+          git apply my-changes.patch
           cd openwrt && ./scripts/feeds update -a
 
       - name: 安装自定义项目的清单
