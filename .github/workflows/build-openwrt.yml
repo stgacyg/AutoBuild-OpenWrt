@@ -138,7 +138,8 @@ jobs:
           make -j$(nproc) || make -j1 V=s
           cd bin/targets/*/*
           mv *.buildinfo *.manifest *.bin $GITHUB_WORKSPACE/openwrt/firmware || true
-          mv  *.vmdk *.vhdx $GITHUB_WORKSPACE/openwrt/firmware || true
+          mv  *.vmdk $GITHUB_WORKSPACE/openwrt/firmware || true
+          mv  *.vhdx $GITHUB_WORKSPACE/openwrt/firmware || true
 
       - name: 保存编译后的固件文件
         if: matrix.FIRMWARE_BUILD == true && inputs.UPLOAD_BIN_DIR == true  && !cancelled()
