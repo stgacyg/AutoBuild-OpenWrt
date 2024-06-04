@@ -110,8 +110,9 @@ jobs:
           tree
           [ -e feeds.conf.default ] && mv feeds.conf.default openwrt/feeds.conf.default
           [ -e my-changes.patch ] && mv my-changes.patch openwrt/my-changes.patch
+          cd openwrt
           [ -e my-changes.patch ] && git apply my-changes.patch
-          cd openwrt && ./scripts/feeds update -a
+          ./scripts/feeds update -a
 
       - name: 安装自定义项目的清单
         if: matrix.FIRMWARE_BUILD == true
@@ -125,7 +126,7 @@ jobs:
           [ -e ${{ matrix.FIRMWARE_NAME }}.sh ] && mv ${{ matrix.FIRMWARE_NAME }}.sh openwrt/diy.sh
           cd openwrt/ && chmod +x diy.sh && ./diy.sh
           
-      - name: Setup tmate session
+      - name: 启动tmate远程调试
         uses: mxschmitt/action-tmate@v3
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
         
