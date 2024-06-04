@@ -60,5 +60,3 @@ echo 'CONFIG_VERSION_HWREV="ROS23.05"' >> .config
 [ -z $(grep "CONFIG_KERNEL_BUILD_DOMAIN=" .config) ] &&
     echo 'CONFIG_KERNEL_BUILD_DOMAIN="GitHub Actions"' >>.config ||
     sed -i 's@\(CONFIG_KERNEL_BUILD_DOMAIN=\).*@\1"GitHub Actions"@' .config
-
-./scripts/feeds install -a
