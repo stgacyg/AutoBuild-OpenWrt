@@ -44,7 +44,6 @@ sed -i '/CONFIG_VERSION_DIST/d' .config
 sed -i '/CONFIG_VERSION_NUMBER/d' .config
 sed -i '/CONFIG_VERSION_CODE/d' .config
 sed -i '/CONFIG_VERSION_HOME_URL/d' .config
-sed -i '/CONFIG_VERSION_REPO/d' .config
 sed -i '/CONFIG_VERSION_PRODUCT/d' .config
 sed -i '/CONFIG_VERSION_HWREV/d' .config
 sed -i '/Image Configurations/d' .config
@@ -55,7 +54,6 @@ echo 'CONFIG_VERSION_DIST="Cnbbx"' >> .config
 echo 'CONFIG_VERSION_NUMBER="R23.05"' >> .config
 echo "CONFIG_VERSION_CODE=\"build $(TZ=UTC-8 date "+%Y.%m.%d")"\" >> .config
 echo 'CONFIG_VERSION_HOME_URL="https://autobuild.i.cnbbx.com/"' >> .config
-echo 'CONFIG_VERSION_REPO="https://autobuild.i.cnbbx.com/"' >> .config
 echo 'CONFIG_VERSION_PRODUCT="CnbbxOS"' >> .config
 echo 'CONFIG_VERSION_HWREV="ROS23.05"' >> .config
 
