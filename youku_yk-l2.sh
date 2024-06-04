@@ -33,6 +33,9 @@ sed -i -e "/\/mount.ntfs-3g/a  \\\t$\(LN\) ..\/usr\/bin\/ntfs-3g $\(1\)\/sbin\/m
 # Set lan wan
 sed -i '/lenovo,newifi-d1/a \\tyouku,yk-l2\|\\'  target/linux/ramips/mt7621/base-files/etc/board.d/02_network
 
+# Del lan3,lan4
+sed -i '/port@2\s*{/,/};/d; /port@3\s*{/,/};/d' target/linux/ramips/dts/mt7621_youku_yk-l2.dts
+
 # Rom Size
 sed -i '/Rom Size/d' .config
 sed -i '/CONFIG_TARGET_KERNEL_PARTSIZE/d' .config
