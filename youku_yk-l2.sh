@@ -36,10 +36,6 @@ sed -i -e "/define Package\/frp\/install/a  \\\t$\(STAGING_DIR_HOST\)\/bin\/upx 
 sed -i '/upx --lzma --best/d' feeds/packages/utils/ntfs-3g/Makefile
 sed -i -e "/\/mount.ntfs-3g/a  \\\t$\(LN\) ..\/usr\/bin\/ntfs-3g $\(1\)\/sbin\/mount.ntfs" feeds/packages/utils/ntfs-3g/Makefile
 
-# remove
-cp -f /dev/null feeds/kenzo/luci-app-ssr-plus/root/etc/ssrplus/gfw_list.conf
-cp -f /dev/null feeds/kenzo/luci-app-ssr-plus/root/etc/ssrplus/china_ssr.txt
-
 # Set lan wan
 # sed -i '/youku,yk-l2/d' .config
 # sed -i '/lenovo,newifi-d1/a \\tyouku,yk-l2\|\\'  target/linux/ramips/mt7621/base-files/etc/board.d/02_network
