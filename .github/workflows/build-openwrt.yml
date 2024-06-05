@@ -18,11 +18,16 @@ on:
     inputs:
       debug_enabled:
         type: boolean
-        description: '开启tmate远程调试'
+        description: "开启tmate远程调试"
+        required: false
+        default: false
+      git_init_enabled:
+        description: "首次初始化GIT"
+        type: boolean
         required: false
         default: false
       UPLOAD_BIN_DIR:
-        description: " 保存编译后的全部文件"
+        description: "保存编译后的全部文件"
         type: boolean
         default: true
       UPLOAD_RELEASE:
@@ -102,12 +107,12 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /workdir/openwrt
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('**/openwrt/.git/ref') }}
+          key: openwrt-${{ hashFiles('**/openwrt/.git/ref') }}
           restore-keys: |
-            ${{ runner.os }}-openwrt-
+            openwrt-
       
       - name: 克隆软路由源代码
-        if: matrix.FIRMWARE_BUILD == true
+        if: matrix.FIRMWARE_BUILD == true && inputs.git_init_enabled
         working-directory: /workdir
         run: |
           git clone --depth=1 $REPO_URL -b $REPO_BRANCH openwrt
