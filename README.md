@@ -4,7 +4,7 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/cnbbx/OpenWrt-AutoBuild?style=for-the-badge&label=Download)](https://github.com/cnbbx/OpenWrt-AutoBuild/releases/latest)
 
 # 路由器固件介绍
-### 本固件基于openwrt-23.05稳定版编译而成
+### 本固件基于openwrt-23.05稳定版编译而成【旁路由 IPV6】
 youku_yk-l2 ROM 16M
 
 d-team_newifi-d2 ROM 32M
