@@ -83,6 +83,7 @@ jobs:
           echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
           echo "硬盘详情："
           df -Th
+          sudo mkdir -p /workdir
 
       - name: 初始化系统环境
         if: matrix.FIRMWARE_BUILD == true
@@ -113,9 +114,10 @@ jobs:
         id: cache
         uses: actions/cache@v3
         with:
+          working-directory: /workdir
           path: /workdir/openwrt
-          key: openwrt-${{ hashFiles('**/openwrt/.git/ref') }}
-          restore-keys: openwrt
+          key: openwrt-
+          restore-keys: openwrt-
           
       - name: 更新Git仓库到最新
         if: matrix.FIRMWARE_BUILD == true
