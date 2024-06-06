@@ -19,9 +19,11 @@ sed -i "s/'OpenWrt'/'Cnbbx'/g" feeds/luci/modules/luci-mod-network/htdocs/luci-s
 sed -i '/set wireless.radio${devidx}.disabled/d' package/kernel/mac80211/files/lib/wifi/mac80211.sh
 
 # Modify default theme
-sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
 sed -i 's/bootstrap/argon/g' feeds/luci/modules/luci-base/root/etc/config/luci
-sed -i 's/CONFIG_PACKAGE_luci-theme-bootstrap=y/CONFIG_PACKAGE_luci-theme-bootstrap=m/' .config
+sed -i '/luci-theme-bootstrap/d' .config
+for file in feeds/luci/collections/luci-light/Makefile feeds/luci/collections/luci-nginx/Makefile feeds/luci/collections/luci-ssl-nginx/Makefile; do
+    sed -i 's/+luci-theme-bootstrap/+luci-theme-argon/' "$file"
+done
 
 # Modify Packages
 sed -i 's/+ariang//g'  feeds/luci/applications/luci-app-aria2/Makefile
