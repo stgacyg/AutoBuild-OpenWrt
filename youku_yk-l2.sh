@@ -28,6 +28,9 @@ done
 # Modify Packages
 sed -i 's/+ariang//g'  feeds/luci/applications/luci-app-aria2/Makefile
 sed -i 's/+alist//g'  feeds/luciApp/applications/luci-app-alist/Makefile
+rm -rf feeds/packages/net/{adguardhome,xray*,v2ray*,sing*,smartdns}
+rm -rf feeds/packages/lang/golang
+git clone https://github.com/kenzok8/golang feeds/packages/lang/golang
 
 # ntfs-3g
 sed -i '/upx --lzma --best/d' feeds/packages/utils/ntfs-3g/Makefile
