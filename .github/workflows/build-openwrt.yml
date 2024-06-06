@@ -129,7 +129,7 @@ jobs:
           git pull
           
       - name: 修改版本补丁
-        if: matrix.FIRMWARE_BUILD == truee && inputs.git_init_enabled
+        if: matrix.FIRMWARE_BUILD == true && inputs.git_init_enabled
         run: |
           tree
           [ -e feeds.conf.default ] && mv feeds.conf.default openwrt/feeds.conf.default
