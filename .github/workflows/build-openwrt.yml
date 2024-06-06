@@ -128,19 +128,18 @@ jobs:
           git reset --hard FETCH_HEAD
           git pull
           
-      - name: 下载自定义项目的清单
-        if: matrix.FIRMWARE_BUILD == true
+      - name: 修改版本补丁
+        if: matrix.FIRMWARE_BUILD == truee && inputs.git_init_enabled
         run: |
           tree
           [ -e feeds.conf.default ] && mv feeds.conf.default openwrt/feeds.conf.default
           [ -e my-changes.patch ] && mv my-changes.patch openwrt/my-changes.patch
           cd openwrt
           [ -e my-changes.patch ] && git apply my-changes.patch
-          ./scripts/feeds update -a
 
-      - name: 安装自定义项目的清单
+      - name: 更新和安装自定义项目的清单
         if: matrix.FIRMWARE_BUILD == true
-        run: cd openwrt && ./scripts/feeds install -a
+        run: cd openwrt && ./scripts/feeds update -a && ./scripts/feeds install -a
 
       - name: 加载自定义固件配置
         if: matrix.FIRMWARE_BUILD == true && !cancelled()
