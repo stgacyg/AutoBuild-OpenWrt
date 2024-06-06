@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019-2023 cnbbx <https://cnbbx.com>
+# Copyright (c) 2009-2024 cnbbx <https://cnbbx.com>
 #
 # This is free software, licensed under the MIT License.
 # See /LICENSE for more information.
@@ -19,11 +19,6 @@ on:
       debug_enabled:
         type: boolean
         description: "开启tmate远程调试"
-        required: false
-        default: false
-      git_init_enabled:
-        description: "首次初始化GIT"
-        type: boolean
         required: false
         default: false
       UPLOAD_BIN_DIR:
@@ -83,7 +78,6 @@ jobs:
           echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
           echo "硬盘详情："
           df -Th
-          sudo mkdir -p /workdir
 
       - name: 初始化系统环境
         if: matrix.FIRMWARE_BUILD == true
@@ -104,38 +98,19 @@ jobs:
           sudo chown $USER:$GROUPS /workdir
       
       - name: 克隆软路由源代码
-        if: matrix.FIRMWARE_BUILD == true && inputs.git_init_enabled
+        if: matrix.FIRMWARE_BUILD == true
         working-directory: /workdir
         run: |
           git clone --depth=1 $REPO_URL -b $REPO_BRANCH openwrt
           ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
           
-      - name: Cache OpenWrt Source
-        id: cache
-        uses: actions/cache@v3
-        with:
-          working-directory: /workdir
-          path: /workdir/openwrt
-          key: openwrt-
-          restore-keys: openwrt-
-          
-      - name: 更新Git仓库到最新
-        if: matrix.FIRMWARE_BUILD == true
-        run: |
-          ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt || true
-          cd openwrt
-          git fetch origin $REPO_BRANCH
-          git reset --hard FETCH_HEAD
-          git pull
-          
       - name: 修改版本补丁
-        if: matrix.FIRMWARE_BUILD == true && inputs.git_init_enabled
+        if: matrix.FIRMWARE_BUILD == true
         run: |
           tree
           [ -e feeds.conf.default ] && mv feeds.conf.default openwrt/feeds.conf.default
           [ -e my-changes.patch ] && mv my-changes.patch openwrt/my-changes.patch
-          cd openwrt
-          [ -e my-changes.patch ] && git apply my-changes.patch
+          cd openwrt && [ -e my-changes.patch ] && git apply my-changes.patch
 
       - name: 更新和安装自定义项目的清单
         if: matrix.FIRMWARE_BUILD == true
