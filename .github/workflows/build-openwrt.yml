@@ -120,6 +120,7 @@ jobs:
       - name: 更新Git仓库到最新
         if: matrix.FIRMWARE_BUILD == true
         run: |
+          ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt || true
           cd openwrt
           git fetch origin $REPO_BRANCH
           git reset --hard FETCH_HEAD
