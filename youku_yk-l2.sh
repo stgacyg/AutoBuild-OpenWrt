@@ -21,7 +21,7 @@ sed -i '/set wireless.radio${devidx}.disabled/d' package/kernel/mac80211/files/l
 # Modify default theme
 sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
 sed -i 's/bootstrap/argon/g' feeds/luci/modules/luci-base/root/etc/config/luci
-sed -i '/luci-theme-bootstrap/d' .config
+sed -i 's/CONFIG_PACKAGE_luci-theme-bootstrap=y/CONFIG_PACKAGE_luci-theme-bootstrap=m/' .config
 
 # Modify Packages
 sed -i 's/+ariang//g'  feeds/luci/applications/luci-app-aria2/Makefile
